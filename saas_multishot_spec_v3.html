@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spec v3 — SaaS Vidéo Multi-Shot</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
+
+  :root {
+    --ink: #111218;
+    --ink-2: #3c3f4d;
+    --ink-3: #8b8fa8;
+    --line: #e4e6f0;
+    --line-2: #f1f2f8;
+    --bg: #f8f8fc;
+    --bg-2: #eeeef8;
+    --white: #ffffff;
+    --yellow: #e8a800;
+    --yellow-bg: #fffbeb;
+    --green: #0f9d58;
+    --green-bg: #edfaf3;
+    --red: #d93025;
+    --red-bg: #fdf3f2;
+    --blue: #1a73e8;
+    --blue-bg: #f0f6ff;
+    --purple: #6d28d9;
+    --purple-bg: #f5f3ff;
+    --orange: #e07000;
+    --orange-bg: #fff7ed;
+    --teal: #0891b2;
+    --teal-bg: #f0fdff;
+    --r: 8px;
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Syne', sans-serif;
+    --body: 'Lora', serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--body); background: var(--bg); color: var(--ink); line-height: 1.7; font-size: 15px; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 0 24px 100px; }
+
+  /* ─── NAV ─── */
+  .toc {
+    position: sticky; top: 0; z-index: 200;
+    background: rgba(248,248,252,.97); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+    padding: 0 24px; margin: 0 -24px;
+    overflow-x: auto; white-space: nowrap;
+  }
+  .toc-inner { display: inline-flex; gap: 2px; padding: 10px 0; }
+  .toc-group { display: inline-flex; gap: 2px; align-items: center; }
+  .toc-sep { width: 1px; height: 14px; background: var(--line); margin: 0 6px; display: inline-block; vertical-align: middle; }
+  .toc a { font-family: var(--display); font-size: 11px; font-weight: 500; color: var(--ink-3); text-decoration: none; padding: 5px 10px; border-radius: 999px; transition: all .15s; letter-spacing: .01em; }
+  .toc a:hover { background: var(--line-2); color: var(--ink); }
+
+  /* ─── HEADER ─── */
+  .doc-header {
+    padding: 56px 0 40px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 56px;
+  }
+  .doc-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+  .badge { font-family: var(--mono); font-size: 10px; font-weight: 500; padding: 3px 9px; border-radius: 999px; }
+  .badge-version { background: var(--ink); color: white; }
+  .badge-new { background: var(--green-bg); color: var(--green); border: 1px solid #86efac; }
+  .badge-updated { background: var(--blue-bg); color: var(--blue); border: 1px solid #93c5fd; }
+  .badge-claude { background: var(--purple-bg); color: var(--purple); border: 1px solid #c4b5fd; }
+  .badge-neutral { background: var(--line-2); color: var(--ink-3); border: 1px solid var(--line); }
+  h1 { font-family: var(--display); font-size: 42px; font-weight: 700; line-height: 1.1; color: var(--ink); margin-bottom: 14px; letter-spacing: -.02em; }
+  .doc-lead { font-size: 15px; color: var(--ink-2); max-width: 620px; line-height: 1.75; font-style: italic; }
+  .changelog { margin-top: 24px; background: var(--ink); color: white; border-radius: var(--r); padding: 16px 20px; display: flex; gap: 14px; }
+  .changelog-icon { font-size: 20px; flex-shrink: 0; }
+  .changelog-title { font-family: var(--display); font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 5px; opacity: .6; }
+  .changelog-items { font-family: var(--mono); font-size: 11px; line-height: 1.9; opacity: .85; }
+
+  /* ─── SECTIONS ─── */
+  section { margin-bottom: 64px; scroll-margin-top: 56px; }
+  .eyebrow { font-family: var(--mono); font-size: 10px; font-weight: 500; color: var(--ink-3); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .eyebrow-tag { font-size: 9px; padding: 1px 6px; border-radius: 999px; font-weight: 600; }
+  .et-new { background: var(--green); color: white; }
+  .et-updated { background: var(--blue); color: white; }
+  .et-kie { background: var(--orange); color: white; }
+  h2 { font-family: var(--display); font-size: 28px; font-weight: 700; color: var(--ink); margin-bottom: 16px; letter-spacing: -.01em; }
+  h3 { font-family: var(--display); font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 10px; margin-top: 28px; }
+  p { color: var(--ink-2); line-height: 1.8; margin-bottom: 14px; font-size: 14px; }
+  p:last-child { margin-bottom: 0; }
+  strong { font-weight: 600; color: var(--ink); }
+
+  /* ─── CALLOUTS ─── */
+  .call { border-radius: var(--r); padding: 14px 18px; font-size: 13px; line-height: 1.7; margin: 18px 0; display: flex; gap: 12px; }
+  .call-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .call-body { flex: 1; }
+  .call-title { font-family: var(--display); font-size: 12px; font-weight: 600; letter-spacing: .03em; margin-bottom: 4px; text-transform: uppercase; }
+  .call.warn { background: var(--yellow-bg); border-left: 3px solid var(--yellow); color: #78350f; }
+  .call.ok { background: var(--green-bg); border-left: 3px solid var(--green); color: #14532d; }
+  .call.info { background: var(--blue-bg); border-left: 3px solid var(--blue); color: #1e3a8a; }
+  .call.danger { background: var(--red-bg); border-left: 3px solid var(--red); color: #7f1d1d; }
+  .call.purple { background: var(--purple-bg); border-left: 3px solid var(--purple); color: #4c1d95; }
+  .call.orange { background: var(--orange-bg); border-left: 3px solid var(--orange); color: #7c2d12; }
+  .call.teal { background: var(--teal-bg); border-left: 3px solid var(--teal); color: #164e63; }
+
+  /* ─── GRIDS ─── */
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0; }
+  .g3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin: 18px 0; }
+  .g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin: 18px 0; }
+  .gauto { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 12px; margin: 18px 0; }
+  @media(max-width:640px) { .g2,.g3,.g4 { grid-template-columns: 1fr; } }
+
+  /* ─── CARDS ─── */
+  .card { background: var(--white); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 18px; }
+  .card.accent-green { border-color: #86efac; }
+  .card.accent-blue { border-color: #93c5fd; }
+  .card.accent-red { border-color: #fca5a5; }
+  .card.accent-purple { border-color: #c4b5fd; }
+  .card.accent-orange { border-color: #fdba74; }
+  .card-label { font-family: var(--mono); font-size: 10px; font-weight: 500; color: var(--ink-3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+  .card-title { font-family: var(--display); font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+  .card-desc { font-size: 12px; color: var(--ink-3); line-height: 1.6; }
+  .card-note { font-size: 11px; color: var(--blue); margin-top: 8px; font-style: italic; }
+  .card-warn { font-size: 11px; color: var(--orange); margin-top: 8px; font-style: italic; }
+
+  /* ─── TABLES ─── */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; margin: 18px 0; }
+  .tbl th { font-family: var(--display); font-size: 11px; font-weight: 600; letter-spacing: .04em; color: var(--ink-3); padding: 8px 14px; border-bottom: 2px solid var(--line); background: var(--bg-2); text-align: left; }
+  .tbl td { padding: 10px 14px; border-bottom: 1px solid var(--line-2); color: var(--ink-2); vertical-align: top; font-size: 13px; }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl code { font-family: var(--mono); font-size: 11px; background: var(--bg-2); padding: 2px 6px; border-radius: 4px; color: var(--ink); }
+  .tbl td strong { font-family: var(--display); font-size: 12px; }
+
+  /* ─── STATUS PIPELINE ─── */
+  .pipeline { margin: 18px 0; }
+  .pipe-row { display: flex; gap: 14px; }
+  .pipe-left { display: flex; flex-direction: column; align-items: center; width: 24px; flex-shrink: 0; }
+  .pipe-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .pipe-line { width: 2px; flex: 1; min-height: 20px; background: var(--line); margin: 4px 0; }
+  .pipe-body { flex: 1; padding-bottom: 20px; }
+  .pipe-name { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--ink); margin-bottom: 3px; }
+  .pipe-desc { font-size: 12px; color: var(--ink-3); line-height: 1.6; }
+  .pipe-action { font-size: 11px; color: var(--red); margin-top: 4px; font-family: var(--mono); }
+
+  /* ─── CHECKLIST ─── */
+  .checks { list-style: none; margin: 14px 0; }
+  .checks li { font-size: 13px; color: var(--ink-2); padding: 8px 0; border-bottom: 1px solid var(--line-2); display: flex; gap: 10px; align-items: baseline; line-height: 1.6; }
+  .checks li:last-child { border-bottom: none; }
+  .checks li::before { font-size: 12px; flex-shrink: 0; }
+  .checks.ok li::before { content: '✓'; color: var(--green); font-weight: 700; }
+  .checks.cross li::before { content: '✗'; color: var(--red); font-weight: 700; }
+  .checks.dot li::before { content: '—'; color: var(--ink-3); }
+  .check-sub { font-size: 11px; color: var(--ink-3); font-style: italic; margin-left: 4px; }
+
+  /* ─── FLOW ─── */
+  .flow-wrap { overflow-x: auto; margin: 20px 0; padding-bottom: 4px; }
+  .flow { display: flex; align-items: center; gap: 0; min-width: max-content; }
+  .fnode { border-radius: var(--r); padding: 10px 14px; font-size: 12px; font-weight: 500; text-align: center; min-width: 100px; border: 1px solid var(--line); background: var(--white); color: var(--ink); font-family: var(--display); }
+  .fnode span { display: block; font-size: 18px; margin-bottom: 4px; }
+  .fnode.user { background: var(--blue-bg); border-color: #93c5fd; color: #1e40af; }
+  .fnode.sys { background: var(--green-bg); border-color: #86efac; color: #14532d; }
+  .fnode.api { background: var(--purple-bg); border-color: #c4b5fd; color: #4c1d95; }
+  .fnode.kie { background: var(--orange-bg); border-color: #fdba74; color: #7c2d12; }
+  .farrow { color: var(--ink-3); padding: 0 8px; font-size: 16px; flex-shrink: 0; }
+
+  /* ─── WIZARD STEPS ─── */
+  .wizard { margin: 20px 0; }
+  .wrow { display: flex; gap: 0; margin-bottom: 8px; border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); }
+  .wleft { width: 170px; flex-shrink: 0; background: var(--white); padding: 14px 16px; border-right: 1px solid var(--line); }
+  .wright { flex: 1; background: var(--line-2); padding: 14px 16px; }
+  .wstep { font-family: var(--display); font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+  .wsub { font-size: 11px; color: var(--ink-3); }
+  .wassist-lbl { font-family: var(--mono); font-size: 10px; font-weight: 500; color: var(--green); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+  .wassist-txt { font-size: 12px; color: var(--ink-2); line-height: 1.6; }
+  .wautosave { font-size: 11px; color: var(--blue); margin-top: 6px; font-style: italic; }
+
+  /* ─── TIMELINE ─── */
+  .timeline { margin: 20px 0; }
+  .trow { display: flex; gap: 16px; }
+  .tmarker { display: flex; flex-direction: column; align-items: center; width: 32px; flex-shrink: 0; }
+  .tcircle { width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: white; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-size: 13px; font-weight: 700; flex-shrink: 0; }
+  .tcircle.v2 { background: var(--blue); }
+  .tcircle.v3 { background: var(--purple); }
+  .tline { width: 2px; background: var(--line); flex: 1; min-height: 24px; margin: 4px 0; }
+  .tbody { flex: 1; padding-bottom: 28px; padding-top: 4px; }
+  .twhen { font-family: var(--mono); font-size: 11px; color: var(--ink-3); margin-bottom: 4px; }
+  .ttitle { font-family: var(--display); font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+  .tdesc { font-size: 13px; color: var(--ink-2); line-height: 1.7; }
+
+  /* ─── MATRIX ─── */
+  .matrix-wrap { overflow-x: auto; margin: 18px 0; }
+
+  /* ─── RISK ─── */
+  .risk-list { display: flex; flex-direction: column; gap: 8px; margin: 18px 0; }
+  .rrow { display: flex; gap: 12px; align-items: flex-start; background: var(--white); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; }
+  .rlvl { font-family: var(--mono); font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; flex-shrink: 0; margin-top: 2px; }
+  .rlvl.h { background: var(--red-bg); color: var(--red); }
+  .rlvl.m { background: var(--yellow-bg); color: var(--yellow); }
+  .rlvl.l { background: var(--green-bg); color: var(--green); }
+  .rtitle { font-family: var(--display); font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .rmit { font-size: 12px; color: var(--ink-3); line-height: 1.6; }
+
+  /* ─── MVP CARDS ─── */
+  .mvp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 10px; margin: 18px 0; }
+  .mvp-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 18px; }
+  .mvp-card.must { border-color: var(--ink); }
+  .mvp-card.maybe { border-color: #93c5fd; }
+  .mvp-card.skip { opacity: .7; }
+  .mvp-n { font-family: var(--mono); font-size: 10px; color: var(--ink-3); margin-bottom: 6px; }
+  .mvp-t { font-family: var(--display); font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+  .mvp-d { font-size: 12px; color: var(--ink-3); line-height: 1.55; }
+  .mvp-why { font-size: 11px; color: var(--blue); margin-top: 8px; font-style: italic; }
+
+  /* ─── DIVIDER ─── */
+  .div-section { border: none; border-top: 2px solid var(--line); margin: 60px 0; position: relative; }
+  .div-section::after { content: attr(data-label); position: absolute; top: -10px; left: 0; background: var(--bg); padding-right: 12px; font-family: var(--mono); font-size: 10px; color: var(--ink-3); letter-spacing: .1em; text-transform: uppercase; }
+
+  /* ─── CODE INLINE ─── */
+  code { font-family: var(--mono); font-size: 12px; background: var(--bg-2); padding: 2px 6px; border-radius: 4px; color: var(--purple); }
+
+  /* ─── SUMMARY BOX ─── */
+  .summary-box { background: var(--ink); color: white; border-radius: var(--r); padding: 24px 28px; margin-top: 0; }
+  .summary-box h3 { font-family: var(--display); font-size: 16px; font-weight: 700; color: white; margin-bottom: 10px; margin-top: 0; }
+  .summary-box p { color: rgba(255,255,255,.8); font-size: 13px; line-height: 1.8; margin-bottom: 0; }
+
+  @media(max-width:600px) {
+    h1 { font-size: 30px; }
+    .wleft { width: 110px; }
+    .wrow { flex-direction: column; }
+    .wleft { width: 100%; border-right: none; border-bottom: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- NAV -->
+<nav class="toc">
+  <div class="toc-inner">
+    <div class="toc-group">
+      <a href="#intro">Contexte</a>
+      <a href="#stack">Stack</a>
+    </div>
+    <span class="toc-sep"></span>
+    <div class="toc-group">
+      <a href="#byok">BYOK</a>
+      <a href="#keys">Clés</a>
+      <a href="#budget">Budget</a>
+    </div>
+    <span class="toc-sep"></span>
+    <div class="toc-group">
+      <a href="#kieai">Kie.ai</a>
+      <a href="#providers">Providers</a>
+      <a href="#matrix">Matrice</a>
+    </div>
+    <span class="toc-sep"></span>
+    <div class="toc-group">
+      <a href="#ux">UX</a>
+      <a href="#wizard">Wizard</a>
+      <a href="#autosave">Autosave</a>
+    </div>
+    <span class="toc-sep"></span>
+    <div class="toc-group">
+      <a href="#objects">Objets</a>
+      <a href="#brandpack">Brand Pack</a>
+      <a href="#adapter">Adaptateur</a>
+    </div>
+    <span class="toc-sep"></span>
+    <div class="toc-group">
+      <a href="#orchestration">Orchestration</a>
+      <a href="#versioning">Versioning</a>
+      <a href="#storage">Stockage</a>
+      <a href="#rgpd">RGPD</a>
+    </div>
+    <span class="toc-sep"></span>
+    <div class="toc-group">
+      <a href="#mvp">MVP</a>
+      <a href="#risks">Risques</a>
+      <a href="#roadmap">Roadmap</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HEADER -->
+<div class="doc-header">
+  <div class="doc-badges">
+    <span class="badge badge-version">v3.0 — Spec complète</span>
+    <span class="badge badge-claude">Built with Claude Code</span>
+    <span class="badge badge-new">BYOK + Kie.ai Focus</span>
+    <span class="badge badge-updated">Orchestration robuste</span>
+    <span class="badge badge-neutral">Avril 2025</span>
+  </div>
+  <h1>SaaS Génération Vidéo<br>Multi-Shot</h1>
+  <p class="doc-lead">Spec produit et technique complète — orchestration de vidéos séquencées via modèles IA interchangeables, clés API fournies par l'utilisateur, assistance maximale à chaque étape. Implémentation prévue avec Claude Code.</p>
+  <div class="changelog">
+    <div class="changelog-icon">⚡</div>
+    <div>
+      <div class="changelog-title">Nouveautés v3 vs v2</div>
+      <div class="changelog-items">
+        + Intégration Kie.ai spécifique (solde, erreurs 401/429, task_id, drag-drop shots)<br>
+        + Garde-fous budgétaires complets (plafond, alerte, blocage par projet)<br>
+        + Idempotence des jobs — anti-double soumission<br>
+        + Webhooks robustes (signature, dupliqués, reprise sur incident)<br>
+        + Statuts enrichis : queued, retrying, cancelled, partial_success<br>
+        + Brand Pack réutilisable entre projets<br>
+        + Autosave + reprise de brouillon dans le wizard<br>
+        + Erreurs actionnables avec bouton de correction directe<br>
+        + Matrice de capacités par provider<br>
+        + Politique de stockage des assets + rétention<br>
+        + Bloc conformité RGPD + propriété des assets<br>
+        + Modèle de données équipes anticipé (schéma uniquement)<br>
+        + Contexte Claude Code intégré dans la stack
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 00 CONTEXTE -->
+<section id="intro">
+  <div class="eyebrow">00 — Contexte</div>
+  <h2>Pourquoi ce SaaS</h2>
+  <p>Les modèles de génération vidéo IA (Kling 3.0 via Kie.ai, Veo 3.1, Runway, Luma…) permettent de produire des séquences de shots cohérents à partir de prompts textuels et de références visuelles. Le problème : leur API est complexe, leurs contraintes varient d'un provider à l'autre, et maintenir la continuité visuelle entre plusieurs shots demande une orchestration manuelle peu fiable.</p>
+  <p>Ce SaaS résout trois problèmes concrets :</p>
+  <ul class="checks ok">
+    <li><strong>Fragmentation des paramètres</strong> — sans outil, l'utilisateur répète les mêmes références de style à chaque shot, source d'erreurs et de ruptures visuelles.</li>
+    <li><strong>Couplage au provider</strong> — chaque modèle a ses propres conventions d'API. Switcher ne devrait pas nécessiter de refaire le travail de structuration.</li>
+    <li><strong>Absence de traçabilité</strong> — sans versioning, comparer deux rendus ou rejouer un résultat précis est impossible.</li>
+  </ul>
+
+  <div class="call info">
+    <div class="call-icon">ℹ️</div>
+    <div class="call-body">
+      <div class="call-title">Provider principal au lancement</div>
+      Kie.ai (Kling 3.0) est le provider MVP. Toutes les spécifications techniques Kie.ai dans ce document sont concrètes et implémentables dès aujourd'hui. Les autres providers (Veo, Runway, Luma) sont anticipés dans la couche adaptateur sans bloquer le développement initial.
+    </div>
+  </div>
+</section>
+
+<!-- 01 STACK -->
+<section id="stack">
+  <div class="eyebrow">01 — Stack technique <span class="eyebrow-tag et-new">NOUVEAU</span></div>
+  <h2>Implémentation avec Claude Code</h2>
+  <p>Le projet est développé avec Claude Code. Cela implique des conventions spécifiques dans la façon dont la spec est rédigée : chaque section technique doit être suffisamment précise pour être directement actionnable par Claude Code sans ambiguïté d'interprétation.</p>
+
+  <div class="g2">
+    <div class="card accent-purple">
+      <div class="card-label">Conventions Claude Code</div>
+      <div class="card-title">Nommage explicite</div>
+      <div class="card-desc">Tous les noms de fonctions, fichiers, champs de base de données et endpoints sont explicités dans la spec avec leur nom exact. Claude Code n'a pas à inventer une convention — elle est ici.</div>
+    </div>
+    <div class="card accent-purple">
+      <div class="card-label">Conventions Claude Code</div>
+      <div class="card-title">Comportements précis</div>
+      <div class="card-desc">Chaque règle métier est formulée comme une condition claire : "si X alors Y, sinon Z". Pas de formulations vagues comme "gérer correctement" ou "valider les données".</div>
+    </div>
+    <div class="card accent-purple">
+      <div class="card-label">Conventions Claude Code</div>
+      <div class="card-title">Sections techniques isolées</div>
+      <div class="card-desc">Les sections product et technique sont clairement séparées. Claude Code peut être instruit de lire uniquement les sections techniques sans contexte UX parasite.</div>
+    </div>
+    <div class="card accent-purple">
+      <div class="card-label">Conventions Claude Code</div>
+      <div class="card-title">Erreurs nommées</div>
+      <div class="card-desc">Chaque erreur possible a un nom en snake_case : <code>insufficient_balance</code>, <code>invalid_api_key</code>, <code>shot_duration_exceeded</code>. Claude Code peut générer les handlers sans ambiguïté.</div>
+    </div>
+  </div>
+
+  <div class="call purple">
+    <div class="call-icon">🤖</div>
+    <div class="call-body">
+      <div class="call-title">Instruction pour Claude Code</div>
+      Cette spec est le document de référence unique. Pour chaque feature à implémenter, référencer la section correspondante. En cas d'ambiguïté entre la spec et une décision de code précédente, la spec fait autorité sauf discussion explicite.
+    </div>
+  </div>
+</section>
+
+<hr class="div-section" data-label="Modèle économique">
+
+<!-- 02 BYOK -->
+<section id="byok">
+  <div class="eyebrow">02 — Modèle économique</div>
+  <h2>Clés API — modèle BYOK</h2>
+  <p>L'utilisateur connecte ses propres clés API pour chaque provider. Il paie directement ce qu'il consomme, aux tarifs du provider, sans marge intermédiaire. Le SaaS facture uniquement son service d'orchestration.</p>
+
+  <div class="g2">
+    <div class="card accent-red">
+      <div class="card-label">❌ Modèle centralisé — abandonné</div>
+      <div class="card-desc">Le SaaS achète des crédits en gros et les revend avec marge. Complexe à opérer, facturation opaque, risque financier pour le SaaS, dépendance provider maximale.</div>
+    </div>
+    <div class="card accent-green">
+      <div class="card-label">✓ BYOK — retenu</div>
+      <div class="card-desc">Clés propres à l'utilisateur. Il voit exactement ce qu'il consomme. Il choisit librement son provider. Le SaaS ne touche aucune marge sur les appels API.</div>
+    </div>
+  </div>
+
+  <h3>Ce que le SaaS facture</h3>
+  <p>L'abonnement couvre l'accès au service d'orchestration : interface, wizard, versioning, brand packs, adaptateurs, assistance intégrée. La tarification exacte (abonnement fixe / par projet / par volume) est une décision business post-MVP — la spec ne la fige pas aujourd'hui.</p>
+</section>
+
+<!-- 03 KEYS -->
+<section id="keys">
+  <div class="eyebrow">03 — Sécurité des clés <span class="eyebrow-tag et-updated">MIS À JOUR</span></div>
+  <h2>Saisie, validation et protection des clés API</h2>
+
+  <h3>Flux de saisie — étape par étape</h3>
+  <div class="pipeline">
+    <div class="pipe-row">
+      <div class="pipe-left"><div class="pipe-dot" style="background:#3b82f6"></div><div class="pipe-line"></div></div>
+      <div class="pipe-body">
+        <div class="pipe-name">1. Page "Mes connexions"</div>
+        <div class="pipe-desc">Liste tous les providers supportés avec statut : <code>connected</code> / <code>disconnected</code> / <code>key_invalid</code>. Lien direct vers la page de création de clé sur le site du provider. Pour Kie.ai : lien direct vers <code>kie.ai/dashboard/api-keys</code>. Captures d'écran annotées intégrées montrant exactement où cliquer.</div>
+      </div>
+    </div>
+    <div class="pipe-row">
+      <div class="pipe-left"><div class="pipe-dot" style="background:#8b5cf6"></div><div class="pipe-line"></div></div>
+      <div class="pipe-body">
+        <div class="pipe-name">2. Saisie de la clé</div>
+        <div class="pipe-desc">Champ <code>type="password"</code> avec toggle afficher/masquer. Format attendu affiché en placeholder : <code>sk-xxxxxxxxxxxxxxxx</code> pour Kie.ai. Validation du format côté frontend avant envoi — si format incorrect : message immédiat <code>invalid_key_format</code> sans appel serveur.</div>
+      </div>
+    </div>
+    <div class="pipe-row">
+      <div class="pipe-left"><div class="pipe-dot" style="background:#0f9d58"></div><div class="pipe-line"></div></div>
+      <div class="pipe-body">
+        <div class="pipe-name">3. Test de connexion automatique — <code>GET /api/v1/user/info</code></div>
+        <div class="pipe-desc">Dès validation, le backend appelle l'endpoint Kie.ai pour vérifier la clé et récupérer le solde disponible. Résultat affiché : <strong>"✓ Clé valide — Solde disponible : X crédits Kling"</strong>. En cas d'échec : message <code>invalid_api_key</code> — "Cette clé ne fonctionne pas. Vérifie qu'elle est bien copiée depuis ton dashboard Kie.ai."</div>
+      </div>
+    </div>
+    <div class="pipe-row">
+      <div class="pipe-left"><div class="pipe-dot" style="background:#111218"></div></div>
+      <div class="pipe-body" style="padding-bottom:0">
+        <div class="pipe-name">4. Stockage chiffré</div>
+        <div class="pipe-desc">Chiffrement AES-256 côté serveur avant stockage. Après la première saisie, seuls les 4 derniers caractères sont affichés pour identification (<code>••••••••xxxx</code>). La clé en clair n'existe qu'en mémoire le temps de l'appel API — jamais dans les logs.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Règles de sécurité non négociables</h3>
+  <div class="g4">
+    <div class="card">
+      <div class="card-label">🔒 Logs</div>
+      <div class="card-desc">Jamais en clair dans les logs serveur, traces de debug, ou payloads archivés.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">🔑 Backend only</div>
+      <div class="card-desc">Tous les appels providers se font exclusivement depuis le backend. Le frontend ne reçoit jamais la clé en retour.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">🚨 Alerte expiration</div>
+      <div class="card-desc">Si une clé devient invalide entre deux sessions, notification immédiate avant tout rendu. Erreur <code>key_expired</code>.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">🗑️ Révocation</div>
+      <div class="card-desc">L'utilisateur peut supprimer sa clé à tout moment depuis "Mes connexions". Suppression immédiate de la valeur chiffrée en base.</div>
+    </div>
+  </div>
+
+  <div class="call danger">
+    <div class="call-icon">🚫</div>
+    <div class="call-body">
+      <div class="call-title">Clé invalide détectée au moment du rendu</div>
+      Si le test de la clé échoue lors de la soumission d'un job (clé révoquée entre-temps), le job passe immédiatement en statut <code>failed</code> avec le message : <em>"Ta clé Kie.ai semble invalide ou expirée. Rends-toi dans Paramètres → Mes connexions pour la mettre à jour."</em> Aucun retry n'est tenté — c'est inutile et facturable.
+    </div>
+  </div>
+</section>
+
+<!-- 04 BUDGET -->
+<section id="budget">
+  <div class="eyebrow">04 — Garde-fous budgétaires <span class="eyebrow-tag et-new">NOUVEAU</span></div>
+  <h2>Contrôle des dépenses API</h2>
+  <p>En BYOK, l'utilisateur paie directement les providers. Sans garde-fous, un bug ou une mauvaise manipulation peut générer des charges non anticipées. Trois niveaux de protection sont implémentés.</p>
+
+  <div class="g3">
+    <div class="card accent-orange">
+      <div class="card-label">Niveau 1 — Estimation</div>
+      <div class="card-title">Coût estimé avant envoi</div>
+      <div class="card-desc">Avant chaque soumission, le SaaS calcule le coût estimé selon le provider et la durée totale. Affiché de façon prominente sur l'écran de confirmation.</div>
+      <div class="card-note">Ex. : "Ce rendu consommera ~0.45$ en crédits Kling selon les tarifs actuels."</div>
+    </div>
+    <div class="card accent-orange">
+      <div class="card-label">Niveau 2 — Alerte solde</div>
+      <div class="card-title">Vérification du solde Kie.ai</div>
+      <div class="card-desc">Avant soumission, appel <code>GET /api/v1/user/info</code> pour vérifier le solde disponible. Si le solde estimé couvre moins de 120% du coût estimé : alerte préventive. Si insuffisant : blocage.</div>
+      <div class="card-warn">⚠ Si solde < coût estimé : "Ton solde Kie.ai (~X crédits) risque d'être insuffisant. Recharge avant de lancer."</div>
+    </div>
+    <div class="card accent-orange">
+      <div class="card-label">Niveau 3 — Plafond projet</div>
+      <div class="card-title">Budget max par projet</div>
+      <div class="card-desc">L'utilisateur peut définir un budget maximum par projet (en crédit ou en €). Si le cumul des rendus dépasse le plafond, tout nouveau rendu est bloqué jusqu'à augmentation manuelle du budget.</div>
+      <div class="card-note">Optionnel en MVP — peut être illimité par défaut avec possibilité de le définir.</div>
+    </div>
+  </div>
+
+  <h3>Journal de consommation</h3>
+  <p>Un tableau de bord "Consommation" affiche l'historique de tous les jobs soumis avec : date, projet, provider utilisé, <code>task_id</code> Kie.ai, coût estimé au moment de la soumission, et statut final. L'utilisateur peut ainsi réconcilier ses factures Kie.ai avec ses projets sur la plateforme.</p>
+
+  <div class="call ok">
+    <div class="call-icon">✅</div>
+    <div class="call-body">
+      <div class="call-title">Promesse de transparence</div>
+      Le <code>task_id</code> Kie.ai de chaque rendu est toujours visible pour l'utilisateur. Il peut ouvrir son dashboard Kie.ai et retrouver exactement la même tâche. Aucune charge ne peut être imputée à un rendu non tracé dans le SaaS.
+    </div>
+  </div>
+</section>
+
+<hr class="div-section" data-label="Providers">
+
+<!-- 05 KIE.AI -->
+<section id="kieai">
+  <div class="eyebrow">05 — Intégration Kie.ai <span class="eyebrow-tag et-kie">KIE.AI FOCUS</span></div>
+  <h2>Spécifications Kie.ai — Kling 3.0</h2>
+  <p>Kie.ai est le provider MVP. Cette section liste toutes les spécifications concrètes de l'intégration, directement utilisables par Claude Code pour l'implémentation.</p>
+
+  <h3>Endpoints utilisés</h3>
+  <table class="tbl">
+    <thead><tr><th>Usage</th><th>Méthode</th><th>Endpoint</th><th>Moment d'appel</th></tr></thead>
+    <tbody>
+      <tr><td>Validation clé + solde</td><td><code>GET</code></td><td><code>/api/v1/user/info</code></td><td>Saisie clé + avant chaque rendu</td></tr>
+      <tr><td>Création d'une tâche</td><td><code>POST</code></td><td><code>/api/v1/jobs/createTask</code></td><td>Soumission d'un job</td></tr>
+      <tr><td>Statut d'une tâche</td><td><code>GET</code></td><td><code>/api/v1/jobs/{taskId}</code></td><td>Polling en fallback si pas de callback</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Structure du payload multi-shot</h3>
+  <table class="tbl">
+    <thead><tr><th>Champ</th><th>Type</th><th>Description</th><th>Contrainte</th></tr></thead>
+    <tbody>
+      <tr><td><code>model</code></td><td>string</td><td>Modèle Kling à utiliser</td><td><code>"kling-v3"</code></td></tr>
+      <tr><td><code>callBackUrl</code></td><td>string</td><td>URL de callback pour notification</td><td>Recommandé en production</td></tr>
+      <tr><td><code>input.multi_shots</code></td><td>boolean</td><td>Active le mode multi-shot</td><td><code>true</code></td></tr>
+      <tr><td><code>input.image_urls</code></td><td>array</td><td>Image d'entrée principale</td><td>1 seule image en multi-shot</td></tr>
+      <tr><td><code>input.duration</code></td><td>number</td><td>Durée totale de la vidéo</td><td>= somme des shots</td></tr>
+      <tr><td><code>input.aspect_ratio</code></td><td>string</td><td>Ratio de l'image</td><td><code>"16:9"</code> / <code>"9:16"</code> / <code>"1:1"</code></td></tr>
+      <tr><td><code>input.mode</code></td><td>string</td><td>Vitesse de rendu</td><td><code>"std"</code> ou <code>"pro"</code></td></tr>
+      <tr><td><code>input.sound</code></td><td>boolean</td><td>Génération sonore</td><td>—</td></tr>
+      <tr><td><code>input.multi_prompt</code></td><td>array</td><td>Tableau des shots</td><td>Chaque shot : <code>prompt</code> + <code>duration</code></td></tr>
+      <tr><td><code>input.kling_elements</code></td><td>array</td><td>Références visuelles nommées</td><td>Max 3 éléments, 2–4 images chacun</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Contraintes de validation spécifiques Kling</h3>
+  <ul class="checks ok">
+    <li>Durée de chaque shot : min 1s, max 12s</li>
+    <li>Somme des durées des shots = durée totale déclarée</li>
+    <li>Longueur du prompt par shot : max 500 caractères</li>
+    <li>Références visuelles : max 3 éléments, max 4 images par élément</li>
+    <li>Image d'entrée : obligatoire en multi-shot (1 seule utilisée)</li>
+  </ul>
+
+  <h3>Gestion des erreurs HTTP Kie.ai — codes spécifiques</h3>
+  <table class="tbl">
+    <thead><tr><th>Code HTTP</th><th>Erreur interne</th><th>Message utilisateur</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td><code>401</code></td><td><code>invalid_api_key</code></td><td>"Ta clé Kie.ai est invalide ou expirée. Mets-la à jour dans Mes connexions."</td><td>Pas de retry. Job → <code>failed</code>. Notification.</td></tr>
+      <tr><td><code>402</code></td><td><code>insufficient_balance</code></td><td>"Ton solde Kie.ai est insuffisant pour ce rendu. Recharge ton compte et relance."</td><td>Pas de retry. Lien vers kie.ai/billing.</td></tr>
+      <tr><td><code>422</code></td><td><code>payload_validation_error</code></td><td>"Un paramètre du projet est invalide. Détails : [champ concerné]."</td><td>Log du champ concerné. Pas de retry.</td></tr>
+      <tr><td><code>429</code></td><td><code>rate_limit_exceeded</code></td><td>"Kie.ai a temporairement limité tes requêtes. Le rendu sera relancé automatiquement dans X secondes."</td><td>Retry automatique avec backoff exponentiel. Max 3 tentatives.</td></tr>
+      <tr><td><code>500</code></td><td><code>provider_error</code></td><td>"Kie.ai a rencontré une erreur technique. Le rendu sera retentée automatiquement."</td><td>Retry 2 fois. Si persistant : <code>failed</code> + notification.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Interface drag-and-drop pour la séquence de shots</h3>
+  <p>L'ordre du tableau <code>multi_prompt[]</code> envoyé à Kie.ai détermine l'ordre des shots dans la vidéo finale. L'éditeur de séquence propose une interface glisser-déposer pour réordonner les shots. À chaque réordonnancement, la durée totale est recalculée dynamiquement et la validation est rejouée silencieusement.</p>
+
+  <h3>Option Standard vs High Speed</h3>
+  <p>Kie.ai expose deux modes via le champ <code>input.mode</code> : <code>"std"</code> (moins cher, plus lent) et <code>"pro"</code> (plus rapide, coût supérieur). En MVP cette option est fixée à <code>"std"</code> par défaut et exposée à l'utilisateur en V1.1 avec une estimation de différence de coût et de délai.</p>
+</section>
+
+<!-- 06 PROVIDERS -->
+<section id="providers">
+  <div class="eyebrow">06 — Providers supportés</div>
+  <h2>Liste et guide de connexion</h2>
+  <p>Pour chaque provider, le SaaS intègre un guide de connexion en captures d'écran statiques directement dans l'interface — pas dans une doc externe. Ces captures sont hébergées sur un espace contrôlé et peuvent être mises à jour sans déploiement.</p>
+
+  <div class="gauto">
+    <div class="card accent-orange">
+      <div class="card-label">MVP — Priorité 1</div>
+      <div class="card-title">Kling 3.0 — Kie.ai</div>
+      <div class="card-desc">Créer un compte sur <strong>kie.ai</strong> → API Keys → Generate. La clé commence par <code>sk-</code>.</div>
+      <div class="card-note">Adaptateur complet implémenté au lancement.</div>
+    </div>
+    <div class="card accent-blue">
+      <div class="card-label">V1.1 — Priorité 2</div>
+      <div class="card-title">Veo 3.1 — Google AI Studio</div>
+      <div class="card-desc">Compte Google → <strong>aistudio.google.com</strong> → API Keys → Create. La clé commence par <code>AIza</code>.</div>
+      <div class="card-note">Adaptateur à implémenter en V1.1.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">V2</div>
+      <div class="card-title">Runway</div>
+      <div class="card-desc"><strong>runwayml.com</strong> → Settings → API. Accès sur plan Pro ou supérieur.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">V2</div>
+      <div class="card-title">Luma Dream Machine</div>
+      <div class="card-desc"><strong>lumalabs.ai</strong> → Developer. Programme d'accès anticipé possible.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 MATRIX -->
+<section id="matrix">
+  <div class="eyebrow">07 — Matrice de capacités <span class="eyebrow-tag et-new">NOUVEAU</span></div>
+  <h2>Capacités par provider</h2>
+  <p>Cette matrice définit les capacités de chaque adaptateur. Elle est lue par le validateur pour appliquer les bonnes contraintes selon le provider sélectionné. Elle est aussi affichée à l'utilisateur dans l'interface de sélection du modèle.</p>
+
+  <div class="matrix-wrap">
+    <table class="tbl">
+      <thead>
+        <tr><th>Capacité</th><th>Kling 3.0 / Kie.ai</th><th>Veo 3.1</th><th>Runway</th><th>Luma</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Multi-shot natif</strong></td><td>✅ <code>multi_prompt[]</code></td><td>⏳ À confirmer</td><td>⏳ À confirmer</td><td>⏳ À confirmer</td></tr>
+        <tr><td><strong>Références visuelles</strong></td><td>✅ Max 3 éléments</td><td>⏳ À confirmer</td><td>⏳ À confirmer</td><td>⏳ À confirmer</td></tr>
+        <tr><td><strong>Durée par shot</strong></td><td>1–12s</td><td>À confirmer</td><td>À confirmer</td><td>À confirmer</td></tr>
+        <tr><td><strong>Limite texte / shot</strong></td><td>500 caractères</td><td>À confirmer</td><td>À confirmer</td><td>À confirmer</td></tr>
+        <tr><td><strong>Image d'entrée</strong></td><td>✅ 1 en multi-shot</td><td>⏳</td><td>⏳</td><td>⏳</td></tr>
+        <tr><td><strong>Callback webhook</strong></td><td>✅ Recommandé</td><td>⏳</td><td>⏳</td><td>⏳</td></tr>
+        <tr><td><strong>Vérification solde</strong></td><td>✅ <code>/user/info</code></td><td>⏳</td><td>⏳</td><td>⏳</td></tr>
+        <tr><td><strong>Coût estimable</strong></td><td>✅ Oui</td><td>⏳</td><td>⏳</td><td>⏳</td></tr>
+        <tr><td><strong>Statut API</strong></td><td>✅ Stable</td><td>⏳</td><td>⏳</td><td>⏳</td></tr>
+        <tr><td><strong>Alerte modèle obsolète</strong></td><td>⚠️ Manuel en V1</td><td>—</td><td>—</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="call warn">
+    <div class="call-icon">⚠️</div>
+    <div class="call-body">
+      <div class="call-title">Règle d'implémentation</div>
+      Les contraintes de validation (durée max, limite texte, nombre d'éléments) doivent être lues depuis la configuration de l'adaptateur, jamais codées en dur dans le validateur global. Si le provider change ses limites, seule la configuration de l'adaptateur est mise à jour.
+    </div>
+  </div>
+</section>
+
+<hr class="div-section" data-label="Expérience utilisateur">
+
+<!-- 08 UX -->
+<section id="ux">
+  <div class="eyebrow">08 — Philosophie UX <span class="eyebrow-tag et-updated">MIS À JOUR</span></div>
+  <h2>Assistance maximale — 6 piliers</h2>
+  <p>Objectif mesurable : un utilisateur non technique génère sa première vidéo multi-shot en moins de 10 minutes depuis la connexion de sa clé Kie.ai jusqu'au rendu terminé.</p>
+
+  <div class="g2">
+    <div class="card accent-purple">
+      <div class="card-label">Pilier 01</div>
+      <div class="card-title">Tout est pré-rempli par défaut</div>
+      <div class="card-desc">Chaque paramètre a une valeur par défaut raisonnée. L'utilisateur peut tout laisser tel quel. Il ne modifie que ce qu'il veut vraiment changer.</div>
+      <div class="card-note">Ex. : format 16:9, durée 30s, mode standard, durées des shots réparties automatiquement.</div>
+    </div>
+    <div class="card accent-purple">
+      <div class="card-label">Pilier 02</div>
+      <div class="card-title">Chaque champ est expliqué</div>
+      <div class="card-desc">Tout label a un tooltip accessible au survol. Le tooltip explique le champ, donne un exemple concret, et précise les limites du provider actif.</div>
+      <div class="card-note">Ex. : "Durée du shot — Min 1s, max 12s pour Kling. Conseil : 3 à 6s pour un rendu naturel."</div>
+    </div>
+    <div class="card accent-purple">
+      <div class="card-label">Pilier 03</div>
+      <div class="card-title">Templates de départ</div>
+      <div class="card-desc">5 à 10 templates pré-remplis couvrant les usages fréquents. L'utilisateur choisit le plus proche de son besoin et modifie uniquement les éléments personnels.</div>
+    </div>
+    <div class="card accent-purple">
+      <div class="card-label">Pilier 04</div>
+      <div class="card-title">Estimation du coût avant envoi</div>
+      <div class="card-desc">Coût estimé affiché de façon prominente sur l'écran de confirmation. Vérification du solde Kie.ai en temps réel avant d'activer le bouton "Générer".</div>
+    </div>
+    <div class="card accent-purple">
+      <div class="card-label">Pilier 05</div>
+      <div class="card-title">Erreurs actionnables — bouton direct</div>
+      <div class="card-desc">Chaque erreur est formulée en langage humain avec un bouton de correction directe. L'utilisateur clique et arrive sur le bon endroit à corriger, sans naviguer.</div>
+      <div class="card-note">Ex. : Erreur durée → message + bouton "Corriger les durées" qui ouvre l'éditeur au shot concerné.</div>
+    </div>
+    <div class="card accent-purple">
+      <div class="card-label">Pilier 06</div>
+      <div class="card-title">Progression visible à tout moment</div>
+      <div class="card-desc">Une barre de progression globale indique où en est l'utilisateur dans le wizard. Un indicateur liste ce qui manque pour débloquer le bouton "Générer".</div>
+      <div class="card-note">Ex. : "Il te manque l'image d'entrée dans le Pack de continuité pour pouvoir lancer le rendu."</div>
+    </div>
+  </div>
+
+  <h3>Score de complétude du Pack de continuité</h3>
+  <p>La checklist du Pack de continuité est associée à un score de confiance visuel — trois niveaux : <strong>Faible</strong> (image d'entrée seulement), <strong>Correct</strong> (image + style global), <strong>Fort</strong> (image + références + style + contraintes caméra). Ce score est présenté comme un indicateur de risque de rupture visuelle, pas comme un bloquant.</p>
+</section>
+
+<!-- 09 WIZARD -->
+<section id="wizard">
+  <div class="eyebrow">09 — Wizard de création <span class="eyebrow-tag et-updated">MIS À JOUR</span></div>
+  <h2>6 étapes guidées</h2>
+
+  <div class="wizard">
+    <div class="wrow">
+      <div class="wleft"><div class="wstep">Étape 1</div><div class="wsub">Nom & format</div></div>
+      <div class="wright">
+        <div class="wassist-lbl">Assistance active</div>
+        <div class="wassist-txt">Format pré-sélectionné selon le réseau cible choisi au départ. Durée suggérée selon le template. Ratio verrouillé automatiquement une fois choisi — ne peut plus changer une fois les shots créés (car impacte le payload Kie.ai).</div>
+        <div class="wautosave">Autosave déclenché après validation de cette étape.</div>
+      </div>
+    </div>
+    <div class="wrow">
+      <div class="wleft"><div class="wstep">Étape 2</div><div class="wsub">Pack de continuité</div></div>
+      <div class="wright">
+        <div class="wassist-lbl">Assistance active</div>
+        <div class="wassist-txt">Tooltip sur chaque champ. Score de complétude affiché en temps réel. Checklist visuelle obligatoire / optionnel. Aperçu immédiat de l'image uploadée. Nommage automatique des éléments de référence (<code>ref_01</code>, <code>ref_02</code>…) pour injection dans les prompts de shots.</div>
+        <div class="wautosave">Autosave à chaque upload d'asset.</div>
+      </div>
+    </div>
+    <div class="wrow">
+      <div class="wleft"><div class="wstep">Étape 3</div><div class="wsub">Séquence de shots</div></div>
+      <div class="wright">
+        <div class="wassist-lbl">Assistance active</div>
+        <div class="wassist-txt">Nombre de shots suggéré selon la durée totale. Durées réparties automatiquement (modifiables). Compteur de caractères en temps réel (max 500 pour Kling). Drag-and-drop pour réordonner. Recalcul dynamique de la durée totale. Validation silencieuse continue — indicateur vert/rouge par shot.</div>
+        <div class="wautosave">Autosave à chaque modification de shot.</div>
+      </div>
+    </div>
+    <div class="wrow">
+      <div class="wleft"><div class="wstep">Étape 4</div><div class="wsub">Choisir le modèle</div></div>
+      <div class="wright">
+        <div class="wassist-lbl">Assistance active</div>
+        <div class="wassist-txt">Comparaison des providers connectés : vitesse estimée, coût estimé, qualité indicative. Si un seul provider connecté → sélectionné automatiquement. Statut de la clé affiché en temps réel (<code>connected</code> / <code>key_invalid</code> / <code>low_balance</code>).</div>
+      </div>
+    </div>
+    <div class="wrow">
+      <div class="wleft"><div class="wstep">Étape 5</div><div class="wsub">Validation & coût</div></div>
+      <div class="wright">
+        <div class="wassist-lbl">Assistance active</div>
+        <div class="wassist-txt">Résumé complet du projet. Validation automatique avec liste de points OK et points à corriger — chacun avec bouton de correction directe. Coût estimé affiché de façon prominente. Vérification du solde Kie.ai en temps réel. Le bouton "Générer" n'est actif que si validation = 100%.</div>
+      </div>
+    </div>
+    <div class="wrow">
+      <div class="wleft"><div class="wstep">Étape 6</div><div class="wsub">Suivi du rendu</div></div>
+      <div class="wright">
+        <div class="wassist-lbl">Assistance active</div>
+        <div class="wassist-txt">Barre de progression avec statut en langage clair. Durée estimée restante (basée sur les temps moyens Kie.ai). Notification in-app + email optionnel quand terminé. Aperçu vidéo automatique dès réception du résultat.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 AUTOSAVE -->
+<section id="autosave">
+  <div class="eyebrow">10 — Autosave & reprise <span class="eyebrow-tag et-new">NOUVEAU</span></div>
+  <h2>Sauvegarde automatique et reprise de brouillon</h2>
+  <p>Si l'utilisateur perd son travail en cours de wizard (fermeture accidentelle, crash navigateur, session expirée), c'est une expérience catastrophique. L'autosave est non négociable.</p>
+
+  <ul class="checks ok">
+    <li>Sauvegarde automatique après chaque action significative : validation d'étape, upload d'asset, modification de shot, changement de provider.</li>
+    <li>Le projet en brouillon (<code>draft</code>) est toujours récupérable depuis la liste des projets — avec un badge "Brouillon" et l'étape où l'utilisateur s'est arrêté.</li>
+    <li>À la reprise, le wizard s'ouvre directement à la dernière étape complétée — pas depuis le début.</li>
+    <li>En cas de conflit (session ouverte sur deux onglets), le plus récent gagne. Un message d'avertissement est affiché si un conflit est détecté.</li>
+    <li>Les brouillons non modifiés depuis 30 jours reçoivent une notification "Ce projet est inactif depuis 30 jours. Veux-tu le continuer ou le supprimer ?"</li>
+  </ul>
+</section>
+
+<hr class="div-section" data-label="Architecture produit">
+
+<!-- 11 OBJECTS -->
+<section id="objects">
+  <div class="eyebrow">11 — Structure</div>
+  <h2>Les 5 objets du SaaS</h2>
+  <p>La v3 ajoute un cinquième objet : le Brand Pack réutilisable entre projets.</p>
+
+  <div class="gauto">
+    <div class="card">
+      <div class="card-label">Objet 1</div>
+      <div class="card-title">Workspace</div>
+      <div class="card-desc">Espace de travail d'un utilisateur ou d'une équipe. Contient tous les projets, Brand Packs et connexions API. Anticipé dans le schéma pour permettre la collaboration future sans refonte.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Objet 2</div>
+      <div class="card-title">Brand Pack</div>
+      <div class="card-desc">Références visuelles et style réutilisables entre plusieurs projets. Niveau au-dessus du Pack de continuité. Un Brand Pack peut être appliqué à n projets.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Objet 3</div>
+      <div class="card-title">Projet</div>
+      <div class="card-desc">Conteneur d'une vidéo. Hérite optionnellement d'un Brand Pack. Contient un Pack de continuité propre, un Plan de shots, et des Jobs de rendu.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Objet 4</div>
+      <div class="card-title">Plan de shots</div>
+      <div class="card-desc">Séquence ordonnée des shots. Chaque shot a sa durée, son prompt, ses références d'éléments. L'ordre détermine le tableau <code>multi_prompt[]</code> envoyé à Kie.ai.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Objet 5</div>
+      <div class="card-title">Job de rendu</div>
+      <div class="card-desc">Exécution technique. Lié à un provider, une clé API utilisateur, un payload envoyé, et un résultat versionné. Cycle de vie complet avec statuts enrichis.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 BRAND PACK -->
+<section id="brandpack">
+  <div class="eyebrow">12 — Brand Pack <span class="eyebrow-tag et-new">NOUVEAU</span></div>
+  <h2>Références visuelles réutilisables entre projets</h2>
+  <p>Un Brand Pack est un ensemble de références visuelles et de contraintes de style définies une fois et réutilisables sur plusieurs projets d'un même client ou d'une même marque.</p>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-label">Contenu d'un Brand Pack</div>
+      <div class="card-desc">Nom du pack, images de référence globales (jusqu'à 10), style global (description texte), palette de couleurs, contraintes caméra, règles de cohérence, notes internes.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Usage dans un projet</div>
+      <div class="card-desc">À la création d'un projet, l'utilisateur peut choisir un Brand Pack existant. Les références du Brand Pack sont pré-chargées dans le Pack de continuité du projet, modifiables localement sans impacter le Brand Pack source.</div>
+    </div>
+  </div>
+
+  <div class="call info">
+    <div class="call-icon">💡</div>
+    <div class="call-body">
+      <div class="call-title">Impact sur la rétention</div>
+      Un utilisateur qui crée un Brand Pack pour son client A revient naturellement créer un deuxième projet pour ce même client plutôt que de repartir de zéro. C'est le mécanisme de rétention le plus naturel du produit.
+    </div>
+  </div>
+</section>
+
+<!-- 13 ADAPTER -->
+<section id="adapter">
+  <div class="eyebrow">13 — Adaptateur <span class="eyebrow-tag et-updated">MIS À JOUR</span></div>
+  <h2>Couche d'abstraction — modèles interchangeables</h2>
+  <p>Le SaaS ne parle jamais directement à un provider. Il passe par un adaptateur qui traduit la structure interne normalisée vers le format attendu par chaque provider, en injectant la clé API de l'utilisateur au moment de l'appel.</p>
+
+  <div class="flow-wrap">
+    <div class="flow">
+      <div class="fnode user"><span>📋</span>Structure interne</div>
+      <div class="farrow">→</div>
+      <div class="fnode sys"><span>⚙️</span>Adaptateur + clé user</div>
+      <div class="farrow">→</div>
+      <div class="fnode api"><span>📡</span>Payload provider</div>
+      <div class="farrow">→</div>
+      <div class="fnode kie"><span>🎬</span>Kie.ai / Veo / …</div>
+      <div class="farrow">→</div>
+      <div class="fnode sys"><span>📥</span>Callback</div>
+      <div class="farrow">→</div>
+      <div class="fnode user"><span>✅</span>Version archivée</div>
+    </div>
+  </div>
+
+  <p>Chaque adaptateur expose une interface commune : <code>buildPayload(project)</code>, <code>parseCallback(body)</code>, <code>getConstraints()</code>, <code>checkBalance(apiKey)</code>, <code>getErrorMessage(code)</code>. Claude Code peut implémenter chaque adaptateur indépendamment sans modifier le cœur de l'orchestrateur.</p>
+
+  <div class="call orange">
+    <div class="call-icon">🔒</div>
+    <div class="call-body">
+      <div class="call-title">Règle absolue</div>
+      La clé API de l'utilisateur n'est injectée dans le payload qu'au moment de l'appel, en mémoire, dans le backend. Elle ne doit jamais apparaître dans les payloads archivés, les snapshots de version, ou les logs.
+    </div>
+  </div>
+</section>
+
+<hr class="div-section" data-label="Orchestration & données">
+
+<!-- 14 ORCHESTRATION -->
+<section id="orchestration">
+  <div class="eyebrow">14 — Orchestration <span class="eyebrow-tag et-updated">ENRICHI</span></div>
+  <h2>Cycle de vie des jobs — statuts complets</h2>
+
+  <div class="pipeline">
+    <div class="pipe-row">
+      <div class="pipe-left"><div class="pipe-dot" style="background:#94a3b8"></div><div class="pipe-line"></div></div>
+      <div class="pipe-body"><div class="pipe-name">draft</div><div class="pipe-desc">Projet en cours d'édition. Autosave actif. Aucun appel API déclenché.</div></div>
+    </div>
+    <div class="pipe-row">
+      <div class="pipe-left"><div class="pipe-dot" style="background:#f59e0b"></div><div class="pipe-line"></div></div>
+      <div class="pipe-body"><div class="pipe-name">ready_for_render</div><div class="pipe-desc">Validation automatique passée à 100%. Le bouton "Générer" est actif.</div></div>
+    </div>
+    <div class="pipe-row">
+      <div class="pipe-left"><div class="pipe-dot" style="background:#06b6d4"></div><div class="pipe-line"></div></div>
+      <div class="pipe-body"><div class="pipe-name">queued</div><div class="pipe-desc">Job en file d'attente interne. Clé d'idempotence générée. En attente de la fenêtre d'envoi au provider.</div></div>
+    </div>
+    <div class="pipe-row">
+      <div class="pipe-left"><div class="pipe-dot" style="background:#3b82f6"></div><div class="pipe-line"></div></div>
+      <div class="pipe-body"><div class="pipe-name">submitted</div><div class="pipe-desc">Payload envoyé à Kie.ai. <code>task_id</code> Kie.ai reçu et sauvegardé. Correspondance <code>job_id_interne ↔ taskId_kie</code> établie.</div></div>
+    </div>
+    <div class="pipe-row">
+      <div class="pipe-left"><div class="pipe-dot" style="background:#8b5cf6"></div><div class="pipe-line"></div></div>
+      <div class="pipe-body"><div class="pipe-name">processing</div><div class="pipe-desc">Kie.ai traite le rendu. Le SaaS attend le callback. Polling déclenché si pas de callback après X minutes.</div></div>
+    </div>
+    <div class="pipe-row">
+      <div class="pipe-left"><div class="pipe-dot" style="background:#f97316"></div><div class="pipe-line"></div></div>
+      <div class="pipe-body"><div class="pipe-name">retrying</div><div class="pipe-desc">Une erreur récupérable a été détectée (ex. <code>429</code>). Retry automatique en cours avec backoff exponentiel. Max 3 tentatives pour <code>429</code>, 2 pour <code>500</code>.</div></div>
+    </div>
+    <div class="pipe-row">
+      <div class="pipe-left"><div class="pipe-dot" style="background:#0f9d58"></div><div class="pipe-line"></div></div>
+      <div class="pipe-body"><div class="pipe-name">succeeded</div><div class="pipe-desc">Rendu terminé. URLs de sortie récupérées et archivées. Version créée. Notification envoyée.</div></div>
+    </div>
+    <div class="pipe-row">
+      <div class="pipe-left"><div class="pipe-dot" style="background:#d93025"></div><div class="pipe-line"></div></div>
+      <div class="pipe-body">
+        <div class="pipe-name">failed</div>
+        <div class="pipe-desc">Erreur non récupérable ou retries épuisés. Log technique conservé (accessible en mode debug). Notification utilisateur en langage humain avec action suggérée.</div>
+        <div class="pipe-action">→ Bouton "Relancer ce rendu" disponible depuis l'historique</div>
+      </div>
+    </div>
+    <div class="pipe-row">
+      <div class="pipe-left"><div class="pipe-dot" style="background:#6b7280"></div><div class="pipe-line"></div></div>
+      <div class="pipe-body"><div class="pipe-name">cancelled</div><div class="pipe-desc">Annulé manuellement par l'utilisateur avant soumission à Kie.ai. Si déjà soumis, le SaaS tente l'annulation côté provider si l'API le permet.</div></div>
+    </div>
+    <div class="pipe-row">
+      <div class="pipe-left"><div class="pipe-dot" style="background:#94a3b8"></div></div>
+      <div class="pipe-body" style="padding-bottom:0"><div class="pipe-name">archived</div><div class="pipe-desc">Version archivée manuellement ou automatiquement après 90 jours sans accès.</div></div>
+    </div>
+  </div>
+
+  <h3>Idempotence des jobs — anti-double soumission</h3>
+  <p>Avant chaque soumission à Kie.ai, une clé d'idempotence est générée côté SaaS (<code>idempotency_key = uuid4()</code>) et envoyée dans le header de la requête. Si Kie.ai supporte ce header, un double envoi produit le même <code>taskId</code> sans créer un second rendu. Si Kie.ai ne le supporte pas, le SaaS vérifie en base qu'aucun job en statut <code>queued</code> / <code>submitted</code> / <code>processing</code> n'existe pour ce projet avant d'autoriser une nouvelle soumission.</p>
+
+  <h3>Webhooks — gestion robuste</h3>
+  <ul class="checks ok">
+    <li>Vérification de la signature du callback Kie.ai avant tout traitement (<code>HMAC-SHA256</code> ou équivalent selon doc Kie.ai).</li>
+    <li>Déduplication des callbacks : si le même <code>taskId</code> est reçu deux fois, le second est ignoré silencieusement.</li>
+    <li>Idempotence du handler : recevoir le même callback 10 fois produit le même état final en base.</li>
+    <li>En cas d'indisponibilité du endpoint de callback (le SaaS est down), Kie.ai retente selon sa propre logique. Le SaaS doit être capable de réconcilier l'état via le polling de récupération au redémarrage.</li>
+    <li>Toute réception de callback est loguée : <code>task_id</code>, timestamp, statut reçu, signature valide ou non.</li>
+  </ul>
+</section>
+
+<!-- 15 VERSIONING -->
+<section id="versioning">
+  <div class="eyebrow">15 — Versioning</div>
+  <h2>Gestion des versions de rendu</h2>
+  <p>Chaque soumission à Kie.ai crée une version indépendante. L'utilisateur peut rejouer, comparer ou dupliquer n'importe quelle version passée.</p>
+
+  <table class="tbl">
+    <thead><tr><th>Champ</th><th>Description</th><th>Sécurité</th></tr></thead>
+    <tbody>
+      <tr><td><code>version_id</code></td><td>Identifiant unique de la tentative</td><td>—</td></tr>
+      <tr><td><code>config_snapshot</code></td><td>Copie de la configuration globale au moment de la soumission</td><td>—</td></tr>
+      <tr><td><code>shots_snapshot</code></td><td>Copie de la séquence de shots telle qu'envoyée</td><td>—</td></tr>
+      <tr><td><code>provider_used</code></td><td>Provider et version du modèle</td><td>—</td></tr>
+      <tr><td><code>payload_sent_redacted</code></td><td>JSON envoyé à Kie.ai, <strong>nettoyé</strong> : clé API retirée, URLs signées remplacées par des identifiants d'asset internes, champs sensibles masqués</td><td>🔒 Redacted</td></tr>
+      <tr><td><code>task_id_kie</code></td><td>Task ID Kie.ai — visible pour l'utilisateur pour réconciliation</td><td>—</td></tr>
+      <tr><td><code>result_urls</code></td><td>URLs de la vidéo générée</td><td>Expiration gérée</td></tr>
+      <tr><td><code>estimated_cost</code></td><td>Coût estimé affiché avant soumission</td><td>—</td></tr>
+      <tr><td><code>error_log_redacted</code></td><td>Détail de l'erreur — accessible en mode debug uniquement, sans infos sensibles</td><td>🔒 Redacted</td></tr>
+      <tr><td><code>idempotency_key</code></td><td>Clé utilisée pour l'anti-double soumission</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Options d'export et de visionneuse</h3>
+  <ul class="checks ok">
+    <li>Aperçu vidéo intégré dans la visionneuse du SaaS</li>
+    <li>Téléchargement du fichier source</li>
+    <li>Bouton "Dupliquer cette version" — crée un nouveau projet à partir de cette configuration</li>
+    <li>Bouton "Relancer ce rendu" — resoumet le même payload (nouveau job, nouvelle version)</li>
+    <li>Partage par lien interne (si mode équipe actif)</li>
+    <li>Suppression manuelle — déclenche la politique de suppression des assets liés</li>
+  </ul>
+</section>
+
+<!-- 16 STORAGE -->
+<section id="storage">
+  <div class="eyebrow">16 — Stockage des assets <span class="eyebrow-tag et-new">NOUVEAU</span></div>
+  <h2>Politique de conservation et rétention</h2>
+
+  <table class="tbl">
+    <thead><tr><th>Type d'asset</th><th>Rétention par défaut</th><th>Suppression</th><th>Export avant purge</th></tr></thead>
+    <tbody>
+      <tr><td>Images de référence (Pack de continuité)</td><td>Durée de vie du projet</td><td>Automatique à la suppression du projet</td><td>Non</td></tr>
+      <tr><td>Images de référence (Brand Pack)</td><td>Durée de vie du Brand Pack</td><td>Manuelle uniquement</td><td>Non</td></tr>
+      <tr><td>Vidéos générées (URLs Kie.ai)</td><td>Selon politique Kie.ai</td><td>Le SaaS archive les URLs — si Kie.ai expire l'URL, le SaaS en avertit l'utilisateur</td><td>Téléchargement conseillé</td></tr>
+      <tr><td>Snapshots de version</td><td>90 jours après archivage</td><td>Automatique après 90 jours</td><td>Export JSON disponible</td></tr>
+      <tr><td>Logs techniques (redacted)</td><td>30 jours</td><td>Automatique</td><td>Non</td></tr>
+      <tr><td>Journal de consommation (task_id)</td><td>12 mois</td><td>Sur demande explicite</td><td>Export CSV disponible</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Validation des images de référence à l'upload</h3>
+  <ul class="checks ok">
+    <li>Formats acceptés : <code>jpg</code>, <code>png</code>, <code>webp</code></li>
+    <li>Poids maximum : 10 Mo par image</li>
+    <li>Dimensions minimales : 512×512px (recommandation Kling)</li>
+    <li>Compression automatique si le poids dépasse 5 Mo (avec avertissement)</li>
+    <li>Déduplication : si la même image est uploadée deux fois dans le même projet, une seule copie est conservée</li>
+    <li>Warning si l'image est de mauvaise qualité (résolution insuffisante)</li>
+  </ul>
+</section>
+
+<!-- 17 RGPD -->
+<section id="rgpd">
+  <div class="eyebrow">17 — Conformité <span class="eyebrow-tag et-new">NOUVEAU</span></div>
+  <h2>RGPD, propriété des assets, responsabilités</h2>
+
+  <div class="g2">
+    <div class="card accent-blue">
+      <div class="card-label">Propriété des contenus</div>
+      <div class="card-title">Assets uploadés par l'utilisateur</div>
+      <div class="card-desc">Les images, références et prompts uploadés par l'utilisateur restent sa propriété exclusive. Le SaaS ne les exploite pas à d'autres fins que l'orchestration du rendu demandé.</div>
+    </div>
+    <div class="card accent-blue">
+      <div class="card-label">Propriété des contenus</div>
+      <div class="card-title">Vidéos générées</div>
+      <div class="card-desc">La propriété des vidéos générées dépend des CGU du provider (Kie.ai). Le SaaS informe l'utilisateur des CGU du provider avant le premier rendu. Le SaaS ne revendique aucun droit sur les vidéos générées.</div>
+    </div>
+    <div class="card accent-green">
+      <div class="card-label">RGPD</div>
+      <div class="card-title">Droit à la suppression</div>
+      <div class="card-desc">L'utilisateur peut supprimer son compte et toutes ses données depuis les paramètres. La suppression est effective sous 30 jours pour les données en backup. Un email de confirmation est envoyé.</div>
+    </div>
+    <div class="card accent-green">
+      <div class="card-label">RGPD</div>
+      <div class="card-title">Consentement et cookies</div>
+      <div class="card-desc">Bannière de consentement conforme. Données analytics anonymisées. Aucune donnée vendue à des tiers. Politique de confidentialité accessible depuis chaque page.</div>
+    </div>
+  </div>
+
+  <div class="call danger">
+    <div class="call-icon">⚖️</div>
+    <div class="call-body">
+      <div class="call-title">Responsabilité sur les contenus générés</div>
+      Le SaaS n'est pas responsable des contenus générés par les modèles IA via les clés de l'utilisateur. Les CGU doivent le stipuler clairement. L'utilisateur est seul responsable de l'usage de ses clés API et des contenus produits via le SaaS.
+    </div>
+  </div>
+</section>
+
+<hr class="div-section" data-label="MVP & Roadmap">
+
+<!-- 18 MVP -->
+<section id="mvp">
+  <div class="eyebrow">18 — MVP</div>
+  <h2>Ce qui est indispensable au premier rendu</h2>
+  <p>Le MVP valide une seule hypothèse : un utilisateur non technique peut connecter sa clé Kie.ai, configurer un projet multi-shot guidé, et obtenir une vidéo générée — sans aide externe, en moins de 10 minutes.</p>
+
+  <div class="mvp-grid">
+    <div class="mvp-card must">
+      <div class="mvp-n">01 — MUST</div>
+      <div class="mvp-t">Page "Mes connexions" Kie.ai</div>
+      <div class="mvp-d">Saisie, test et stockage chiffré de la clé. Guide visuel intégré. Vérification solde.</div>
+      <div class="mvp-why">Sans clé valide rien ne fonctionne.</div>
+    </div>
+    <div class="mvp-card must">
+      <div class="mvp-n">02 — MUST</div>
+      <div class="mvp-t">Wizard 6 étapes + autosave</div>
+      <div class="mvp-d">Avec valeurs par défaut, tooltips, drag-drop shots, estimation coût, validation active.</div>
+      <div class="mvp-why">C'est l'expérience centrale du produit.</div>
+    </div>
+    <div class="mvp-card must">
+      <div class="mvp-n">03 — MUST</div>
+      <div class="mvp-t">3 templates de départ</div>
+      <div class="mvp-d">Pré-remplis pour démarrer immédiatement sans réfléchir à la structure.</div>
+      <div class="mvp-why">Réduit la friction au premier usage.</div>
+    </div>
+    <div class="mvp-card must">
+      <div class="mvp-n">04 — MUST</div>
+      <div class="mvp-t">Orchestrateur Kie.ai complet</div>
+      <div class="mvp-d">Adaptateur, idempotence, webhooks, statuts enrichis, gestion erreurs 401/429.</div>
+      <div class="mvp-why">C'est le cœur technique du produit.</div>
+    </div>
+    <div class="mvp-card must">
+      <div class="mvp-n">05 — MUST</div>
+      <div class="mvp-t">Vérification solde + garde-fous</div>
+      <div class="mvp-d">Estimation coût + check solde avant soumission. Erreurs actionnables avec bouton direct.</div>
+      <div class="mvp-why">BYOK sans garde-fou = mauvaise surprise garantie.</div>
+    </div>
+    <div class="mvp-card must">
+      <div class="mvp-n">06 — MUST</div>
+      <div class="mvp-t">Visionneuse + historique minimal</div>
+      <div class="mvp-d">Aperçu vidéo, task_id visible, téléchargement, journal de consommation simple.</div>
+      <div class="mvp-why">L'utilisateur doit voir et récupérer son résultat.</div>
+    </div>
+    <div class="mvp-card maybe">
+      <div class="mvp-n">07 — SHOULD</div>
+      <div class="mvp-t">Brand Pack basique</div>
+      <div class="mvp-d">Création et application à un projet. Sans partage ni collaboration pour l'instant.</div>
+      <div class="mvp-why">Fort impact rétention mais peut démarrer au Pack de continuité simple.</div>
+    </div>
+    <div class="mvp-card maybe">
+      <div class="mvp-n">08 — SHOULD</div>
+      <div class="mvp-t">Politique de stockage + RGPD minimal</div>
+      <div class="mvp-d">Suppression de compte, politique de confidentialité, rétention définie en base.</div>
+      <div class="mvp-why">Obligatoire avant ouverture publique.</div>
+    </div>
+    <div class="mvp-card skip">
+      <div class="mvp-n">— LATER</div>
+      <div class="mvp-t">Sacrifié volontairement</div>
+      <div class="mvp-d">Standard vs High Speed, alerte modèle obsolète, mode débutant/expert, collaboration équipes, analytics avancées, second provider (Veo), publication automatique, comparaison côte-à-côte.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 19 RISKS -->
+<section id="risks">
+  <div class="eyebrow">19 — Risques</div>
+  <h2>Risques et mitigations</h2>
+
+  <div class="risk-list">
+    <div class="rrow"><span class="rlvl h">ÉLEVÉ</span><div><div class="rtitle">Clé API compromise côté utilisateur</div><div class="rmit">Charges non autorisées sur le compte provider. Mitigation : documentation claire sur les bonnes pratiques (clé dédiée, surveillance du solde), journal de consommation avec task_id pour contestation, alerte si pic de dépense anormal détecté.</div></div></div>
+    <div class="rrow"><span class="rlvl h">ÉLEVÉ</span><div><div class="rtitle">Changement d'API Kie.ai sans préavis</div><div class="rmit">La couche adaptateur isole l'impact — seul l'adaptateur Kie.ai est à mettre à jour. Jobs de santé automatiques (appel test quotidien) pour détecter une rupture avant les utilisateurs. Notification interne immédiate si job de santé échoue.</div></div></div>
+    <div class="rrow"><span class="rlvl h">ÉLEVÉ</span><div><div class="rtitle">Double soumission et double facturation</div><div class="rmit">Clé d'idempotence côté SaaS + vérification en base qu'aucun job actif n'existe pour ce projet avant soumission. Journalisé et visible dans le journal de consommation.</div></div></div>
+    <div class="rrow"><span class="rlvl m">MOYEN</span><div><div class="rtitle">Friction à la connexion de la clé Kie.ai</div><div class="rmit">Guide visuel intégré en captures d'écran statiques (hébergées sur espace contrôlé, mises à jour sans déploiement). Optionnel : clé de démo pour tester le produit avant de créer son compte Kie.ai.</div></div></div>
+    <div class="rrow"><span class="rlvl m">MOYEN</span><div><div class="rtitle">Rupture de continuité visuelle entre shots</div><div class="rmit">Score de complétude du Pack de continuité pour sensibiliser l'utilisateur. Encourager l'affinage des références avant relance. La visionneuse permet de comparer facilement deux versions.</div></div></div>
+    <div class="rrow"><span class="rlvl m">MOYEN</span><div><div class="rtitle">Perte de brouillon sans autosave</div><div class="rmit">Autosave systématique à chaque action significative. Reprise de session depuis la dernière étape complétée. Avertissement avant fermeture d'onglet si modifications non sauvegardées.</div></div></div>
+    <div class="rrow"><span class="rlvl l">BAS</span><div><div class="rtitle">Dépendance unique à Kie.ai au lancement</div><div class="rmit">La couche adaptateur permet d'ajouter Veo en V1.1 avec un effort minimal. Surveiller manuellement les annonces Kie.ai pour anticiper les migrations nécessaires.</div></div></div>
+  </div>
+</section>
+
+<!-- 20 ROADMAP -->
+<section id="roadmap">
+  <div class="eyebrow">20 — Roadmap</div>
+  <h2>Prochaines étapes avec Claude Code</h2>
+
+  <div class="timeline">
+    <div class="trow">
+      <div class="tmarker"><div class="tcircle">1</div><div class="tline"></div></div>
+      <div class="tbody">
+        <div class="twhen">Semaine 1–2</div>
+        <div class="ttitle">Schéma de données + sécurité des clés</div>
+        <div class="tdesc">Définir le schéma complet des 5 objets (Workspace, Brand Pack, Projet, Plan de shots, Job de rendu) en anticipant le modèle équipes sans l'implémenter. Implémenter le stockage chiffré des clés API et le test automatique via <code>GET /api/v1/user/info</code> Kie.ai. <strong>Rien d'autre avant que ces deux blocs soient validés.</strong></div>
+      </div>
+    </div>
+    <div class="trow">
+      <div class="tmarker"><div class="tcircle">2</div><div class="tline"></div></div>
+      <div class="tbody">
+        <div class="twhen">Semaine 2–3</div>
+        <div class="ttitle">Adaptateur Kie.ai complet</div>
+        <div class="tdesc">Implémenter l'adaptateur avec : <code>buildPayload()</code>, <code>parseCallback()</code>, <code>getConstraints()</code>, <code>checkBalance()</code>, <code>getErrorMessage()</code>. Tester avec un payload minimal end-to-end. Implémenter l'idempotence et la gestion des webhooks avec vérification de signature.</div>
+      </div>
+    </div>
+    <div class="trow">
+      <div class="tmarker"><div class="tcircle v2">3</div><div class="tline"></div></div>
+      <div class="tbody">
+        <div class="twhen">Semaine 3–5</div>
+        <div class="ttitle">Wizard complet + autosave + garde-fous</div>
+        <div class="tdesc">Les 6 étapes du wizard avec tooltips, valeurs par défaut, drag-drop shots, compteur caractères, estimation de coût, check solde Kie.ai, erreurs actionnables. Autosave à chaque étape. 3 templates pré-remplis testés par des utilisateurs non techniques.</div>
+      </div>
+    </div>
+    <div class="trow">
+      <div class="tmarker"><div class="tcircle v2">4</div><div class="tline"></div></div>
+      <div class="tbody">
+        <div class="twhen">Semaine 5–6</div>
+        <div class="ttitle">Test utilisateur — objectif 10 minutes</div>
+        <div class="tdesc">Faire tester par 3 à 5 utilisateurs sans accompagnement. Mesurer le temps entre "Je connecte ma clé Kie.ai" et "Ma vidéo est générée". Objectif : moins de 10 minutes. Identifier les étapes d'abandon et corriger avant ouverture.</div>
+      </div>
+    </div>
+    <div class="trow">
+      <div class="tmarker"><div class="tcircle v3">5</div><div class="tline"></div></div>
+      <div class="tbody">
+        <div class="twhen">Semaine 7–8</div>
+        <div class="ttitle">Brand Pack + RGPD + Journal de consommation</div>
+        <div class="tdesc">Implémenter le Brand Pack réutilisable, la politique de suppression des données, la page de confidentialité, et le journal de consommation avec export CSV. Préparer le terrain pour l'ouverture publique.</div>
+      </div>
+    </div>
+    <div class="trow">
+      <div class="tmarker"><div class="tcircle v3">6</div></div>
+      <div class="tbody" style="padding-bottom:0">
+        <div class="twhen">Semaine 9+</div>
+        <div class="ttitle">Second adaptateur (Veo) + Standard vs High Speed</div>
+        <div class="tdesc">Ajouter l'adaptateur Veo 3.1 pour réduire la dépendance Kie.ai. Exposer l'option Standard vs High Speed dans le wizard. Mettre en place les jobs de santé automatiques pour monitorer les deux providers.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SUMMARY -->
+<div class="summary-box">
+  <h3>Synthèse du produit — v3</h3>
+  <p>Ce SaaS orchestre la génération vidéo multi-shot via les clés API propres à chaque utilisateur, qui paie directement ses providers au prix du marché. Pour le lancement, Kie.ai (Kling 3.0) est le provider unique — totalement intégré avec vérification de solde, gestion des erreurs spécifiques, idempotence des jobs, et webhooks robustes. Un wizard en 6 étapes guidées avec autosave, valeurs par défaut, tooltips et erreurs actionnables permet à un utilisateur non technique de générer sa première vidéo en moins de 10 minutes. La couche adaptateur garantit que l'ajout d'un second provider (Veo, Runway…) ne nécessite aucune modification du cœur du produit. Ce document est le référentiel unique pour l'implémentation avec Claude Code.</p>
+</div>
+
+</div>
+</body>
+</html>
