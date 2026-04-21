@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Plus,
@@ -178,7 +178,15 @@ const TEMPLATES: Template[] = [
 // Page
 // ---------------------------------------------------------------------------
 
-export default function NewProjectWizard() {
+export default function NewProjectWizardPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-gray-500" /></div>}>
+      <NewProjectWizard />
+    </Suspense>
+  );
+}
+
+function NewProjectWizard() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
